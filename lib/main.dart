@@ -1,122 +1,156 @@
-import 'package:flutter/material.dart';
+  import "package:flutter/material.dart";
 
-void main() {
-  runApp(const MyApp());
-}
+  void main() {
+    runApp(MyApp());
+  }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  class MyApp extends StatelessWidget {
 
-  // This widget is the root of your application.
+    @override
+    Widget build(BuildContext context) {
+      return MaterialApp(
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text("Федоров Антон Алексеевич"),
+          ),
+          body: MyHomePage(),
+        )
+      );
+    }
+
+  }
+
+ class MyHomePage extends StatelessWidget {
+
+  final _formKey = GlobalKey<FormState>();
+  final _fieldHeight = TextEditingController();
+  final _fieldWeight = TextEditingController();
+  
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                "Вес",
+                style: TextStyle(fontSize: 20.0),
+              ),
+              TextFormField(
+                controller: _fieldWeight,
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value!.isEmpty) return "Пожалуйста введите свой вес";
+                  if (num.tryParse(value) == null) return "Введите число";
+                  if (num.parse(value) < 0) return "Рост должен быть больше 0";
+                },
+                decoration: const InputDecoration(
+                  hintText: "Введите вес",
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              const Text(
+                "Рост",
+                style: TextStyle(fontSize: 20.0),
+              ),
+              TextFormField(
+                controller: _fieldHeight,
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value!.isEmpty) return "Пожалуйста введите свой рост";
+                  if (num.tryParse(value) == null) return "Введите число";
+                  if (num.parse(value) < 0) return "Рост должен быть больше 0";
+                },
+                decoration: const InputDecoration(
+                  hintText: "Введите рост",
+                ),
+              ),
+              const SizedBox(height: 24.0),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    
+                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => 
+                    SecondScreen(weight: _fieldWeight.text, height: _fieldHeight.text,)
+                    )
+                    );
+                  }
+                },
+                child: const Text("Отправить"),
+              ),
+            ],
+          ),
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class SecondScreen extends StatelessWidget {
+  
+  final String height;
+  final String weight;
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  SecondScreen({required this.height, required this.weight});
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  double calculateIMT() {
 
-  final String title;
+    double h = double.parse(height);
+    double w = double.parse(weight);
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+    return w / ((h/100)*(h/100));
+  }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  String getTextIMT(double imt) {
+    if (imt < 16) {
+      return "Выраженный дефицит массы тела";
+    } else if (imt >= 16 && imt < 18.5) {
+      return "Недостаточная масса тела";
+    } else if (imt >= 18.5 && imt < 25) {
+      return "Норма (здоровый вес)";
+    } else if (imt >= 25 && imt < 30) {
+      return "Избыточная масса тела";
+    } else if (imt >= 30 && imt < 35) {
+      return "Ожирение I степени";
+    } else if (imt >= 35 && imt < 40) {
+      return "Ожирение II степени";
+    } else {
+      return "Ожирение III степени";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+
+    double imt = calculateIMT();
+    String textIMT = getTextIMT(imt);
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            Text("Вес: $weight",
+              style: TextStyle(fontSize: 20.0)
             ),
+            Text("Рост: $height",
+              style: TextStyle(fontSize: 20.0)
+            ),
+            Text("ИМТ: ${imt.toStringAsFixed(1)}",
+              style: TextStyle(fontSize: 20.0)
+            ),
+            Text("Данное значение ИМТ соответствует: $textIMT",
+              style: TextStyle(fontSize: 20.0)
+            )
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
