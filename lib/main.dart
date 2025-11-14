@@ -1,31 +1,37 @@
-  import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
-  void main() {
-    runApp(MyApp());
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text("Федоров Антон Алексеевич"),
+        ),
+        body: MyHomePage(),
+      )
+    );
   }
+}
 
-  class MyApp extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
 
-    @override
-    Widget build(BuildContext context) {
-      return MaterialApp(
-        home: Scaffold(
-          appBar: AppBar(
-            title: Text("Федоров Антон Алексеевич"),
-          ),
-          body: MyHomePage(),
-        )
-      );
-    }
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
 
-  }
-
- class MyHomePage extends StatelessWidget {
+class _MyHomePageState extends State<MyHomePage> {
 
   final _formKey = GlobalKey<FormState>();
   final _fieldHeight = TextEditingController();
   final _fieldWeight = TextEditingController();
-  
+  bool _agreement = false;
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -44,9 +50,10 @@
                 controller: _fieldWeight,
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value!.isEmpty) return "Пожалуйста введите свой вес";
+                  if (value == null || value.isEmpty) return "Пожалуйста введите свой вес";
                   if (num.tryParse(value) == null) return "Введите число";
-                  if (num.parse(value) < 0) return "Рост должен быть больше 0";
+                  if (num.parse(value) <= 0) return "Вес должен быть больше 0";
+                  return null;
                 },
                 decoration: const InputDecoration(
                   hintText: "Введите вес",
@@ -61,23 +68,39 @@
                 controller: _fieldHeight,
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value!.isEmpty) return "Пожалуйста введите свой рост";
+                  if (value == null || value.isEmpty) return "Пожалуйста введите свой рост";
                   if (num.tryParse(value) == null) return "Введите число";
-                  if (num.parse(value) < 0) return "Рост должен быть больше 0";
+                  if (num.parse(value) <= 0) return "Рост должен быть больше 0";
+                  return null;
                 },
                 decoration: const InputDecoration(
                   hintText: "Введите рост",
                 ),
               ),
+              CheckboxListTile(
+                value: _agreement,
+                title: const Text("Я согласен с условиями обработки персональных данных"),
+                onChanged: (bool? value) {
+                  setState(() {
+                    _agreement = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
               const SizedBox(height: 24.0),
               ElevatedButton(
                 onPressed: () {
+                  if (!_agreement) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Пожалуйста, согласитесь с условиями.'))
+                    );
+                    return;
+                  }
                   if (_formKey.currentState?.validate() ?? false) {
-                    
                     Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => 
-                    SecondScreen(weight: _fieldWeight.text, height: _fieldHeight.text,)
-                    )
+                      MaterialPageRoute(builder: (context) =>
+                        SecondScreen(weight: _fieldWeight.text, height: _fieldHeight.text,)
+                      )
                     );
                   }
                 },
@@ -92,17 +115,15 @@
 }
 
 class SecondScreen extends StatelessWidget {
-  
+
   final String height;
   final String weight;
 
   SecondScreen({required this.height, required this.weight});
 
   double calculateIMT() {
-
     double h = double.parse(height);
     double w = double.parse(weight);
-
     return w / ((h/100)*(h/100));
   }
 
@@ -126,7 +147,6 @@ class SecondScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     double imt = calculateIMT();
     String textIMT = getTextIMT(imt);
 
@@ -137,16 +157,16 @@ class SecondScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Вес: $weight",
-              style: TextStyle(fontSize: 20.0)
+              style: const TextStyle(fontSize: 20.0)
             ),
             Text("Рост: $height",
-              style: TextStyle(fontSize: 20.0)
+              style: const TextStyle(fontSize: 20.0)
             ),
             Text("ИМТ: ${imt.toStringAsFixed(1)}",
-              style: TextStyle(fontSize: 20.0)
+              style: const TextStyle(fontSize: 20.0)
             ),
             Text("Данное значение ИМТ соответствует: $textIMT",
-              style: TextStyle(fontSize: 20.0)
+              style: const TextStyle(fontSize: 20.0)
             )
           ],
         ),
